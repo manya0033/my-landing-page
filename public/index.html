@@ -4,34 +4,391 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>My Landing Page</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
   <style>
-    body {
-      font-family: sans-serif;
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #080808;
+      --surface: #111111;
+      --border: #1e1e1e;
+      --text: #e8e8e8;
+      --muted: #555;
+      --accent: #c8f542;
+      --accent2: #42f5c8;
+      --font-display: 'Syne', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-display);
+      overflow-x: hidden;
+    }
+
+    /* Noise texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    /* Subtle glow in corner */
+    body::after {
+      content: '';
+      position: fixed;
+      top: -200px;
+      right: -200px;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(200,245,66,0.04) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    /* ── HEADER ── */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 2rem 0;
+      border-bottom: 1px solid var(--border);
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 0.1s;
+    }
+
+    .logo {
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      color: var(--muted);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    .clock-wrap {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-align: right;
+    }
+
+    #clock {
+      font-size: 1rem;
+      color: var(--text);
+      letter-spacing: 0.05em;
+    }
+
+    #date {
+      margin-top: 2px;
+      color: var(--muted);
+    }
+
+    /* ── MAIN ── */
+    main {
       display: flex;
       flex-direction: column;
-      align-items: center;
       justify-content: center;
-      height: 100vh;
-      margin: 0;
-      background: #0f0f0f;
-      color: white;
+      padding: 5rem 0 3rem;
+      gap: 4rem;
     }
-    h1 { font-size: 3rem; margin-bottom: 1rem; }
-    p  { font-size: 1.2rem; color: #aaa; }
-    span { color: #00e599; font-weight: bold; }
+
+    /* Hero */
+    .hero {
+      opacity: 0;
+      animation: fadeUp 0.7s ease forwards 0.3s;
+    }
+
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .eyebrow::before {
+      content: '';
+      display: inline-block;
+      width: 2rem;
+      height: 1px;
+      background: var(--accent);
+    }
+
+    h1 {
+      font-size: clamp(3rem, 8vw, 6rem);
+      font-weight: 800;
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+      margin-bottom: 2rem;
+    }
+
+    h1 em {
+      font-style: normal;
+      color: transparent;
+      -webkit-text-stroke: 1px var(--muted);
+    }
+
+    .bio {
+      font-size: 1rem;
+      color: var(--muted);
+      line-height: 1.8;
+      max-width: 480px;
+      font-weight: 400;
+    }
+
+    /* Stats row */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1px;
+      border: 1px solid var(--border);
+      background: var(--border);
+      opacity: 0;
+      animation: fadeUp 0.7s ease forwards 0.5s;
+    }
+
+    .stat {
+      background: var(--bg);
+      padding: 1.5rem 2rem;
+      transition: background 0.2s;
+    }
+
+    .stat:hover { background: var(--surface); }
+
+    .stat-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .stat-value.accent { color: var(--accent); }
+    .stat-value.accent2 { color: var(--accent2); }
+
+    #visitor-count { transition: opacity 0.3s; }
+
+    /* Links */
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      opacity: 0;
+      animation: fadeUp 0.7s ease forwards 0.7s;
+    }
+
+    .link-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.2rem;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .link-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(200,245,66,0.04);
+    }
+
+    .link-btn svg {
+      width: 14px;
+      height: 14px;
+      fill: currentColor;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 1.5rem 0;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 0.9s;
+    }
+
+    .footer-text {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+    }
+
+    .status-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--muted);
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2s ease infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Error state */
+    .error { color: #ff5555; font-size: 0.75rem; font-family: var(--font-mono); }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 3rem; }
+      .stats { grid-template-columns: 1fr 1fr; }
+    }
   </style>
 </head>
 <body>
-  <h1>👋 Welcome</h1>
-  <p>You are visitor number <span id="count">...</span></p>
+  <div class="page">
+
+    <header>
+      <span class="logo">// manya.mahajan</span>
+      <div class="clock-wrap">
+        <div id="clock">--:--:--</div>
+        <div id="date">--- --, ----</div>
+      </div>
+    </header>
+
+    <main>
+      <div class="hero">
+        <div class="eyebrow">Available for work</div>
+        <h1>Hello,<br>I'm <em>Manya</em><br>Mahajan.</h1>
+        <p class="bio">
+          Third year Computer Science student maintaining an HD WAM.
+          I build things with code, obsess over clean architecture, and
+          enjoy solving problems that actually matter. When I'm not at my
+          desk, I'm running, learning a new language, or planning my next trip. Based in Melbourne, AU.
+        </p>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-label">Total Visitors</div>
+          <div class="stat-value accent" id="visitor-count">—</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Location</div>
+          <div class="stat-value" style="font-size:1.1rem; padding-top:0.5rem">Melbourne<br><span style="color:var(--muted); font-size:0.85rem">Australia 🇦🇺</span></div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Status</div>
+          <div class="stat-value accent2" style="font-size:1rem; padding-top:0.5rem">Open to<br>opportunities</div>
+        </div>
+      </div>
+
+      <div class="links">
+        <a class="link-btn" href="https://github.com/manya0033" target="_blank">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+          GitHub
+        </a>
+        <a class="link-btn" href="https://twitter.com" target="_blank">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          Twitter / X
+        </a>
+        <a class="link-btn" href="https://linkedin.com" target="_blank">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          LinkedIn
+        </a>
+        <a class="link-btn" href="mailto:manyamahajan3003@gmail.com">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 010 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.910 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/></svg>
+          Email Me
+        </a>
+      </div>
+    </main>
+
+    <footer>
+      <span class="footer-text">© 2026 Manya Mahajan — Built with Supabase & Vercel</span>
+      <span class="status-dot"><span class="dot"></span> Live</span>
+    </footer>
+
+  </div>
 
   <script>
+    // ── CLOCK ──
+    function updateClock() {
+      const now = new Date()
+      const time = now.toLocaleTimeString('en-AU', { hour12: false })
+      const date = now.toLocaleDateString('en-AU', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+      document.getElementById('clock').textContent = time
+      document.getElementById('date').textContent = date
+    }
+    updateClock()
+    setInterval(updateClock, 1000)
+
+    // ── VISITOR COUNTER ──
     async function getCount() {
-      const res = await fetch('/api/visit')
-      const data = await res.json()
-      document.getElementById('count').textContent = data.count
+      try {
+        const res = await fetch('/api/visit')
+        if (!res.ok) throw new Error('API error')
+        const data = await res.json()
+        const el = document.getElementById('visitor-count')
+        // Animate count up
+        let start = 0
+        const end = data.count
+        const duration = 1200
+        const step = Math.ceil(end / (duration / 16))
+        const timer = setInterval(() => {
+          start = Math.min(start + step, end)
+          el.textContent = start.toLocaleString()
+          if (start >= end) clearInterval(timer)
+        }, 16)
+      } catch (err) {
+        document.getElementById('visitor-count').innerHTML = '<span class="error">error</span>'
+      }
     }
     getCount()
   </script>
 </body>
-</html> 
+</html>
